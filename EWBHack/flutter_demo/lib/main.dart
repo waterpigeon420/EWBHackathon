@@ -60,6 +60,8 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   String _recipetext = "Please input your data…";
+  String _edamametext = "Edamame output";
+  String _ratingtext = " - ; - ; - ; - ; - ;";
 
   void _incrementCounter() {
     setState(() {
@@ -72,7 +74,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void _updateResponse(String text, int index) {
+  void _updateResponse(String text) {
     // This call to setState allows one to update the response text.
     setState(() {
       _recipetext = text;
