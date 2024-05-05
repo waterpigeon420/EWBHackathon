@@ -50,6 +50,8 @@ type Recipes map[string]RecipeDetails
 //
 //	"http://localhost:8080/" -Method POST -ContentType "application/json" -Body '{"calories": "2100", "diet": "vegetarian", "carbs": "50", "protein": "25", "fat": "25"}'
 func handleIngredientRequest(w http.ResponseWriter, r *http.Request) {
+	/* Log */
+	log.Println("*** Calling Gemini ***")
 
 	ctx := context.Background()
 	// Access your API key as an environment variable (see "Set up your API key" above)
@@ -101,6 +103,8 @@ func handleIngredientRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func parseHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("*** Parsing ingredients ***")
+
 	if r.Method != "POST" {
 		http.Error(w, "Only POST method is accepted", http.StatusMethodNotAllowed)
 		return
@@ -112,7 +116,7 @@ func parseHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	text := string(body)
-
+	log.Println(text)
 	ingredients, err := parseIngredients(text)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -154,10 +158,13 @@ func parseIngredients(data string) (Ingredients, error) {
 			}
 		}
 	}
+	log.Println(ingredients);
 	return ingredients, nil
 }
 
 func recipesHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("*** Parsing recipes ***")
+
 	if r.Method != "POST" {
 		http.Error(w, "Only POST method is accepted", http.StatusMethodNotAllowed)
 		return
@@ -168,8 +175,10 @@ func recipesHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error reading request body", http.StatusInternalServerError)
 		return
 	}
-
-	recipes, err := parseRecipes(string(body))
+	text := string(body)
+	log.Println(text)
+	recipes, err := parseRecipes(text)
+	log.Println(recipes);
 	if err != nil {
 		http.Error(w, "Error parsing recipes: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -208,6 +217,7 @@ func parseRecipes(data string) (Recipes, error) {
 }
 
 func sustainabilityHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("*** Calling Gemini again ***")
 	if r.Method != "POST" {
 		http.Error(w, "Only POST method is accepted", http.StatusMethodNotAllowed)
 		return

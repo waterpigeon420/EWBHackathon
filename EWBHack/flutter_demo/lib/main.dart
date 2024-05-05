@@ -73,6 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _updateResponse(String text) {
+    // This call to setState allows one to update the response text.
     setState(() {
       _recipetext = text;
     });
@@ -118,10 +119,11 @@ class _MyHomePageState extends State<MyHomePage> {
             Expanded(child: 
               Row(
                 children: [
-                  Expanded(
+                  Flexible(
                     flex: 3,
                     child: Column(
                       children: [
+                        const SizedBox(height: 16),
                         /* Form field */
                         FormExample(
                           onChanged: _updateResponse,
@@ -193,7 +195,58 @@ void geminiAPIcall(Map<String,String> jsonstr, ValueChanged<String> onChanged) a
   if (response.statusCode < 300) {
     print(response.body);
     onChanged(response.body);
+    geminiAPIcall2(response.body, onChanged);
   } else {}
+}
+
+void geminiAPIcall2(String str, ValueChanged<String> onChanged) async {
+  /* Ingredients */
+  final response1 = await http.post(
+    Uri.parse('http://localhost:8080/ingredients'),
+        headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+    body: jsonEncode(str)
+  );
+
+  print(response1.statusCode);
+
+  if (response1.statusCode < 300) {
+    print(response1.body);
+  } else {return;}
+
+  /* Recipes */
+  final response2 = await http.post(
+    Uri.parse('http://localhost:8080/recipes'),
+        headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+    body: jsonEncode(str)
+  );
+
+  print(response2.statusCode);
+
+  if (response2.statusCode < 300) {
+    print(response2.body);
+  } else {return;}
+
+  geminiAPIcall3(<String,String> {'recipeList': response1.body, 'ingred': response2.body}, onChanged);
+}
+
+void geminiAPIcall3(Map<String, String> jsonstr, ValueChanged<String> onChanged) async {
+  final response = await http.post(
+    Uri.parse('http://localhost:8080/sustainability'),
+        headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+    body: jsonEncode(jsonstr)
+  );
+
+  print(response.statusCode);
+
+  if (response.statusCode < 300) {
+    print(response.body);
+  } else {return;}
 }
 
 /* Form */
