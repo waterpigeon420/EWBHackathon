@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:scrollable_text_indicator/scrollable_text_indicator.dart';
 import 'dart:convert';
 
 void main() {
@@ -114,32 +115,47 @@ class _MyHomePageState extends State<MyHomePage> {
           // wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Column(
-              children: [
-                /* Starter code */
-                const Text(
-                  'You have clicked the demo button this many times:',
-                ),
-                /* Form field */
-                FormExample(
-                  onChanged: _updateResponse,
-                ),
-                /* Buttons */
-                const Text('What is your level of exercise?'),
-                ElevatedButton(
-                    onPressed: () {
-                      print("Button pressed!");
-                      _updateResponse("Please input your data…");
-                    },
-                    child: const Text('Button')),
-              ],
-            ),
-            Column(children: [
-              Text(
-                '$_recipetext',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-            ],)
+            Expanded(child: 
+              Row(
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      children: [
+                        /* Form field */
+                        FormExample(
+                          onChanged: _updateResponse,
+                        ),
+                        /* Buttons */
+                        const Text('What is your level of exercise?'),
+                        ElevatedButton(
+                            onPressed: () {
+                              print("Button pressed!");
+                              _updateResponse("Please input your data…");
+                            },
+                            child: const Text('Button')),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                      flex: 2,
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text('Nutrition suggestions',
+                                style:
+                                    Theme.of(context).textTheme.headlineMedium),
+                            Flexible(
+                              child: ScrollableTextIndicator(
+                                text: Text('$_recipetext',
+                                    style:
+                                        Theme.of(context).textTheme.bodySmall),
+                              ),
+                            ),
+                          ])),
+                ],
+              ),),
           ],
         ),
       ),
@@ -209,7 +225,7 @@ class _FormExampleState extends State<FormExample> {
           /* Row 1 */
           Row(
             children: [
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               /* Gender */
               Expanded(
                   flex: 3,
@@ -240,7 +256,7 @@ class _FormExampleState extends State<FormExample> {
                           }).toList(),
                         ),
                       ])),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               /* Age */
               Expanded(
                 flex: 3,
@@ -266,14 +282,14 @@ class _FormExampleState extends State<FormExample> {
                       ),
                     ]),
               ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
             ],
           ),
 
           /* Row 2: Calories */
           Row(
             children: [
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Expanded(
                   flex: 3,
                   child: Column(
@@ -298,7 +314,7 @@ class _FormExampleState extends State<FormExample> {
                           },
                         ),
                       ])),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Expanded(
                 flex: 3,
                 child: Column(
@@ -324,14 +340,14 @@ class _FormExampleState extends State<FormExample> {
                       ),
                     ]),
               ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
             ],
           ),
 
           /* Row 3: Caloric percentage */
           Row(
             children: [
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Expanded(
                   flex: 3,
                   child: Column(
@@ -350,7 +366,7 @@ class _FormExampleState extends State<FormExample> {
                           },
                         ),
                       ])),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Expanded(
                 flex: 3,
                 child: Column(
@@ -370,7 +386,7 @@ class _FormExampleState extends State<FormExample> {
                       ),
                     ]),
               ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Expanded(
                 flex: 3,
                 child: Column(
@@ -390,7 +406,7 @@ class _FormExampleState extends State<FormExample> {
                       ),
                     ]),
               ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
             ],
           ),
 
@@ -442,6 +458,7 @@ class _FormExampleState extends State<FormExample> {
                     'diet': _dietaryController.value.toString(),
                     'allergy': _allergyController.value.toString()
                   };
+                  /* Perform Gemini API Call */
                   geminiAPIcall(body, widget.onChanged);
                 }
               },
