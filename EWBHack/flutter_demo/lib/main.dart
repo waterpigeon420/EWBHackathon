@@ -1,8 +1,5 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:async';
 import 'dart:convert';
 
 void main() {
@@ -21,7 +18,7 @@ class MyApp extends StatelessWidget {
         // This is the theme of your application.
         //
         // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
+        // the application has a teal toolbar. Then, without quitting the app,
         // try changing the seedColor in the colorScheme below to Colors.green
         // and then invoke "hot reload" (save your changes or press the "hot
         // reload" button in a Flutter-supported IDE, or press "r" if you used
@@ -36,7 +33,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.tealAccent),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Engineers Without Borders'),
     );
   }
 }
@@ -59,30 +56,9 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-void demo_apicall() async {
-  final response = await http.post(
-    Uri.parse('http://localhost:8080/geminiResp'),
-    headers: <String, String>{
-      'Content-Type': 'application/json; charset=UTF-8',
-    },
-    body: jsonEncode(<String, String>{
-      'calories': '2000',
-      'diet': 'vegan',
-      'carbs': '50',
-      'protein': '25',
-      'fat': '25'
-    }),
-  );
-
-  print(response.statusCode);
-
-  if (response.statusCode < 300) {
-    print(response.body);
-  } else {}
-}
-
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  String _recipetext = "None";
 
   void _incrementCounter() {
     setState(() {
@@ -92,6 +68,12 @@ class _MyHomePageState extends State<MyHomePage> {
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
       _counter++;
+    });
+  }
+
+  void _updateResponse(String text) {
+    setState(() {
+      _recipetext = text;
     });
   }
 
@@ -137,7 +119,7 @@ class _MyHomePageState extends State<MyHomePage> {
               'You have clicked the demo button this many times:',
             ),
             Text(
-              '$_counter',
+              '$_recipetext',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             /* Form field */
@@ -146,10 +128,9 @@ class _MyHomePageState extends State<MyHomePage> {
             const Text('What is your level of exercise?'),
             ElevatedButton(
                 onPressed: () {
-                  demo_apicall();
                   print("Button pressed!");
                 },
-                child: const Text('Submit…')),
+                child: const Text('Button')),
           ],
         ),
       ),
@@ -173,7 +154,7 @@ enum ColorLabel {
   final Color color;
 }
 
-void gemini_apicall(Map<String,String> jsonstr) async {
+void geminiAPIcall(Map<String,String> jsonstr) async {
   final response = await http.post(
     Uri.parse('http://localhost:8080/geminiResp'),
     headers: <String, String>{
@@ -450,7 +431,7 @@ class _FormExampleState extends State<FormExample> {
                     'diet': _dietaryController.value.toString(),
                     'allergy': _allergyController.value.toString()
                   };
-                  gemini_apicall(body);
+                  geminiAPIcall(body);
                 }
               },
               child: const Text('Submit'),
