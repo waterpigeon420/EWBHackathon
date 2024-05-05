@@ -58,7 +58,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-  String _recipetext = "None";
+  String _recipetext = "Please input your data…";
 
   void _incrementCounter() {
     setState(() {
@@ -114,23 +114,32 @@ class _MyHomePageState extends State<MyHomePage> {
           // wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            /* Starter code */
-            const Text(
-              'You have clicked the demo button this many times:',
+            Column(
+              children: [
+                /* Starter code */
+                const Text(
+                  'You have clicked the demo button this many times:',
+                ),
+                /* Form field */
+                FormExample(
+                  onChanged: _updateResponse,
+                ),
+                /* Buttons */
+                const Text('What is your level of exercise?'),
+                ElevatedButton(
+                    onPressed: () {
+                      print("Button pressed!");
+                      _updateResponse("Please input your data…");
+                    },
+                    child: const Text('Button')),
+              ],
             ),
-            Text(
-              '$_recipetext',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            /* Form field */
-            FormExample(onChanged: _updateResponse,),
-            /* Buttons */
-            const Text('What is your level of exercise?'),
-            ElevatedButton(
-                onPressed: () {
-                  print("Button pressed!");
-                },
-                child: const Text('Button')),
+            Column(children: [
+              Text(
+                '$_recipetext',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+            ],)
           ],
         ),
       ),
