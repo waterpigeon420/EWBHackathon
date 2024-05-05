@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -151,7 +150,7 @@ func parseIngredients(data string) (Ingredients, error) {
 			if len(parts) == 2 {
 				ingredient := strings.TrimSpace(parts[0])
 				quantity := strings.TrimSpace(parts[1])
-				ingredients[ingredient] = quantity
+				ingredients[quantity] = ingredient
 			}
 		}
 	}
@@ -164,7 +163,7 @@ func recipesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Error reading request body", http.StatusInternalServerError)
 		return
@@ -189,7 +188,7 @@ func parseRecipes(data string) (Recipes, error) {
 		line = strings.TrimSpace(line)
 		if strings.HasPrefix(line, "- **") { // Check if the line is a recipe title
 			// Extract the recipe title from the line
-			titleEnd := strings.Index(line, "** -")
+			titleEnd := strings.Index(line, "** ")
 			if titleEnd != -1 {
 				currentRecipe = line[4:titleEnd] // Remove the "- **" and trailing characters
 				recipes[currentRecipe] = RecipeDetails{}
@@ -200,7 +199,7 @@ func parseRecipes(data string) (Recipes, error) {
 			if len(parts) == 2 {
 				ingredient := strings.TrimSpace(parts[0])
 				quantity := strings.TrimSpace(parts[1])
-				recipes[currentRecipe][ingredient] = quantity
+				recipes[currentRecipe][quantity] = ingredient
 			}
 		}
 	}
@@ -208,10 +207,77 @@ func parseRecipes(data string) (Recipes, error) {
 	return recipes, nil
 }
 
+func sustainabilityHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Only POST method is accepted", http.StatusMethodNotAllowed)
+		return
+	}
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Error reading request body", http.StatusInternalServerError)
+		return
+	}
+
+	recipes, err := parseRecipes(string(body))
+	if err != nil {
+		http.Error(w, "Error parsing recipes: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var ingred []string
+	var recipeList []string
+	// Loop through the map
+	for recipe, recipeDet := range recipes {
+		var result string
+		recipeList = append(recipeList, recipe)
+		for quantity, ingredients := range recipeDet {
+			result += quantity + ":" + ingredients + ", "
+			ingred = append(ingred, result)
+		}
+	}
+
+	ctx := context.Background()
+	// Access your API key as an environment variable (see "Set up your API key" above)
+	client, err := genai.NewClient(ctx, option.WithAPIKey("AIzaSyBWkfrGEtBFBF1lx1V_4hcwPsI2bwWV3lc"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+	var finalResp string
+	model := client.GenerativeModel("gemini-pro")
+	for i, _ := range recipeList {
+		resp, err := model.GenerateContent(ctx, genai.Text("You are an agent that is able to only give a single score for environmental sustainability for, usually vegetarian recipes, fruits will have a high sustainability while non-vegetarian ones will have low sustanability, if the dish includes both vegetarian and non-vegetarian ingredients, the non-veg ingredient's low sustainability score should weigh more in your final score, but dont make it extremely low, increase the weight of vegetairan ingredients , in your output a score of 1 is the lowest sustainability while 10 is the highest. Output only a sustainability score for "+recipeList[i]+" with ingredients "+ingred[i]+" . Do not provide justification for the calculations or methods, just a score based on the sustainability of each ingredient that is provided for the recipe, the score should be out of 10, e.g some_score/10."))
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		marshalResponse, _ := json.MarshalIndent(resp, "", "  ")
+		//fmt.Println(string(marshalResponse))
+		var generateResponse ContentResponse
+		if err := json.Unmarshal(marshalResponse, &generateResponse); err != nil {
+			log.Fatal(err)
+		}
+		var response string
+		for _, cad := range *generateResponse.Candidates {
+			if cad.Content != nil {
+				for _, part := range cad.Content.Parts {
+					response += part
+				}
+			}
+		}
+		finalResp += response
+	}
+
+	w.Write([]byte(finalResp))
+}
+
 func main() {
 	log.Println("Running Golang server")
 	http.HandleFunc("/geminiResp", handleIngredientRequest)
 	http.HandleFunc("/ingredients", parseHandler)
 	http.HandleFunc("/recipes", recipesHandler)
-	log.Println(http.ListenAndServe(":8080", nil))
+	http.HandleFunc("/sustainability", sustainabilityHandler)
+	log.Fatal(http.ListenAndServe(":8080", nil))
+
 }
