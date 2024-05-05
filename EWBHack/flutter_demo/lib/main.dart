@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.tealAccent),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Engineers Without Borders'),
+      home: const MyHomePage(title: '✧ Engineers Without Borders ✧'),
     );
   }
 }
@@ -59,9 +59,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-  String _recipetext = "Please input your data…";
-  String _edamametext = "Edamame output";
-  String _ratingtext = " - ; - ; - ; - ; - ;";
+  String _recipetext = "✦✧✦✧✦✧✦✧✦✧✦✧✦✧✦✧✦✧✦";
+  String _ratingtext = "What is your level of sustainability?";
 
   void _incrementCounter() {
     setState(() {
@@ -78,6 +77,13 @@ class _MyHomePageState extends State<MyHomePage> {
     // This call to setState allows one to update the response text.
     setState(() {
       _recipetext = text;
+    });
+  }
+
+  void _updateRating(String text) {
+    // This call to setState allows one to update the response text.
+    setState(() {
+      _ratingtext = text;
     });
   }
 
@@ -129,13 +135,14 @@ class _MyHomePageState extends State<MyHomePage> {
                         /* Form field */
                         FormExample(
                           onChanged: _updateResponse,
+                          onRating: _updateRating,
                         ),
                         /* Buttons */
-                        const Text('What is your level of exercise?'),
+                        Text(_ratingtext),
                         ElevatedButton(
                             onPressed: () {
-                              print("Button pressed!");
-                              _updateResponse("Please input your data…");
+                              _updateResponse("✦✧✦✧✦✧✦✧✦✧✦✧✦✧✦✧✦✧✦✧");
+                              _updateRating("What is your level of sustainability?");
                             },
                             child: const Text('Reset message')),
                       ],
@@ -147,7 +154,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Text('Nutrition suggestions',
+                            Text('✨ Nutrition information ✨',
                                 style:
                                     Theme.of(context).textTheme.headlineMedium),
                             Flexible(
@@ -183,7 +190,7 @@ enum ColorLabel {
   final Color color;
 }
 
-void geminiAPIcall(Map<String,String> jsonstr, ValueChanged<String> onChanged) async {
+void geminiAPIcall(Map<String,String> jsonstr, ValueChanged<String> onChanged, ValueChanged<String> onRating) async {
   final response = await http.post(
     Uri.parse('http://localhost:8080/geminiResp'),
     headers: <String, String>{
@@ -197,11 +204,11 @@ void geminiAPIcall(Map<String,String> jsonstr, ValueChanged<String> onChanged) a
   if (response.statusCode < 300) {
     print(response.body);
     onChanged(response.body);
-    geminiAPIcall2(response.body, onChanged);
+    geminiAPIcall2(response.body, onChanged, onRating);
   } else {}
 }
 
-void geminiAPIcall2(String str, ValueChanged<String> onChanged) async {
+void geminiAPIcall2(String str, ValueChanged<String> onChanged, ValueChanged<String> onRating) async {
   /* Ingredients */
   final response1 = await http.post(
     Uri.parse('http://localhost:8080/ingredients'),
@@ -255,10 +262,10 @@ void geminiAPIcall2(String str, ValueChanged<String> onChanged) async {
   } else {return;}
 
   /* Final step */
-  geminiAPIcall3(str, onChanged);
+  geminiAPIcall3(str, onChanged, onRating);
 }
 
-void geminiAPIcall3(String raw, ValueChanged<String> onChanged) async {
+void geminiAPIcall3(String raw, ValueChanged<String> onChanged, ValueChanged<String> onRating) async {
   final response = await http.post(
     Uri.parse('http://localhost:8080/sustainability'),
         headers: <String, String>{
@@ -271,13 +278,14 @@ void geminiAPIcall3(String raw, ValueChanged<String> onChanged) async {
 
   if (response.statusCode < 300) {
     print(response.body);
+    onRating(response.body);
   } else {return;}
 }
 
 /* Form */
 class FormExample extends StatefulWidget {
-  const FormExample({super.key, required this.onChanged});
-  final ValueChanged<String> onChanged;
+  const FormExample({super.key, required this.onChanged, required this.onRating});
+  final ValueChanged<String> onChanged, onRating;
 
   @override
   State<FormExample> createState() => _FormExampleState();
@@ -537,7 +545,7 @@ class _FormExampleState extends State<FormExample> {
                     'allergy': _allergyController.value.toString()
                   };
                   /* Perform Gemini API Call */
-                  geminiAPIcall(body, widget.onChanged);
+                  geminiAPIcall(body, widget.onChanged, widget.onRating);
                 }
               },
               child: const Text('Submit'),
