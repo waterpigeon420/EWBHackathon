@@ -32,7 +32,7 @@ type Person struct {
 // example request
 //
 //	"http://localhost:8080/" -Method POST -ContentType "application/json" -Body '{"calories": "2100", "diet": "vegetarian", "carbs": "50", "protein": "25", "fat": "25"}'
-func handleRequest(w http.ResponseWriter, r *http.Request) {
+func handleIngredientRequest(w http.ResponseWriter, r *http.Request) {
 
 	ctx := context.Background()
 	// Access your API key as an environment variable (see "Set up your API key" above)
@@ -58,7 +58,7 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 
 	// For text-only input, use the gemini-pro model
 	model := client.GenerativeModel("gemini-pro")
-	resp, err := model.GenerateContent(ctx, genai.Text("You are an agent adept at giving nutritional information. I want to eat "+p.Calories+" calories a day, I am a "+p.Diet+", I want "+p.Carbohydrates+" percent of my diet to be carbs "+p.Protein+" percent to be protein and "+p.Fat+" percent to be fat. I eat 3 meals a day and my metabolic rate is 7100 KJ/day. Suggest groceries I should buy as a shopping list for one day and exact amount for each ingredient in grams. Make the Breakfast the lightest meal by the amount of calories."))
+	resp, err := model.GenerateContent(ctx, genai.Text("You are an agent adept at giving nutritional information. I want to eat "+p.Calories+" calories a day, I am a "+p.Diet+", I want "+p.Carbohydrates+" percent of my diet to be carbs "+p.Protein+" percent to be protein and "+p.Fat+" percent to be fat. I eat 3 meals a day and my metabolic rate is 7100 KJ/day. Suggest groceries I should buy as a shopping list for one day and exact amount for each ingredient in grams. Make the Breakfast the lightest meal by the amount of calories. Give only ingredients and not recipes."))
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
@@ -81,6 +81,6 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/", handleRequest)
+	http.HandleFunc("/ingredients", handleIngredientRequest)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
