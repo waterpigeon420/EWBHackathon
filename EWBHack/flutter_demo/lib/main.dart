@@ -123,7 +123,7 @@ class _MyHomePageState extends State<MyHomePage> {
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             /* Form field */
-            const FormExample(),
+            FormExample(onChanged: _updateResponse,),
             /* Buttons */
             const Text('What is your level of exercise?'),
             ElevatedButton(
@@ -154,7 +154,7 @@ enum ColorLabel {
   final Color color;
 }
 
-void geminiAPIcall(Map<String,String> jsonstr) async {
+void geminiAPIcall(Map<String,String> jsonstr, ValueChanged<String> onChanged) async {
   final response = await http.post(
     Uri.parse('http://localhost:8080/geminiResp'),
     headers: <String, String>{
@@ -167,12 +167,14 @@ void geminiAPIcall(Map<String,String> jsonstr) async {
 
   if (response.statusCode < 300) {
     print(response.body);
+    onChanged(response.body);
   } else {}
 }
 
 /* Form */
 class FormExample extends StatefulWidget {
-  const FormExample({super.key});
+  const FormExample({super.key, required this.onChanged});
+  final ValueChanged<String> onChanged;
 
   @override
   State<FormExample> createState() => _FormExampleState();
@@ -431,7 +433,7 @@ class _FormExampleState extends State<FormExample> {
                     'diet': _dietaryController.value.toString(),
                     'allergy': _allergyController.value.toString()
                   };
-                  geminiAPIcall(body);
+                  geminiAPIcall(body, widget.onChanged);
                 }
               },
               child: const Text('Submit'),
