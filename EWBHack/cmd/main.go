@@ -177,8 +177,10 @@ func recipesHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func parseRecipes(data string) (Recipes, error) {
+	fmt.Println(data)
 	recipes := make(Recipes)
 	lines := strings.Split(data, "\n")
+
 	var currentRecipe string
 
 	for _, line := range lines {
@@ -263,7 +265,7 @@ func sustainabilityHandler(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
-		finalResp += response
+		finalResp += response + ", "
 	}
 
 	w.Write([]byte(finalResp))
