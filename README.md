@@ -1,5 +1,6 @@
 ## Inspiration
-EatYourFill
+![TitleSlide](https://github.com/waterpigeon420/EWBHackathon/assets/29824582/a449788a-a1d9-4cea-a93b-95f58ea17e48)
+![LiveDemo](https://github.com/waterpigeon420/EWBHackathon/assets/29824582/40af5404-13e7-4e13-b1aa-83139685dbff)
 
 The inspiration behind our project was to create a user-friendly and intuitive platform that allows individuals to be aware of their food purchases, portions and sustainable choices to reduce household food waste. We identified that targetting individual household food waste would make a large difference in mitigating overall waste.
 
