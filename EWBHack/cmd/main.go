@@ -148,7 +148,7 @@ func parseIngredients(data string) (Ingredients, error) {
 			if len(parts) == 2 {
 				ingredient := strings.TrimSpace(parts[0])
 				quantity := strings.TrimSpace(parts[1])
-				ingredients[ingredient] = quantity
+				ingredients[quantity] = ingredient
 			}
 		}
 	}
@@ -197,7 +197,7 @@ func parseRecipes(data string) (Recipes, error) {
 			if len(parts) == 2 {
 				ingredient := strings.TrimSpace(parts[0])
 				quantity := strings.TrimSpace(parts[1])
-				recipes[currentRecipe][ingredient] = quantity
+				recipes[currentRecipe][quantity] = ingredient
 			}
 		}
 	}
