@@ -276,7 +276,7 @@ func sustainabilityHandler(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
-		finalResp += response
+		finalResp += response + "; "
 	}
 
 	w.Write([]byte(finalResp))

@@ -72,7 +72,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void _updateResponse(String text) {
+  void _updateResponse(String text, int index) {
     // This call to setState allows one to update the response text.
     setState(() {
       _recipetext = text;
@@ -135,7 +135,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               print("Button pressed!");
                               _updateResponse("Please input your data…");
                             },
-                            child: const Text('Button')),
+                            child: const Text('Reset message')),
                       ],
                     ),
                   ),
@@ -206,7 +206,7 @@ void geminiAPIcall2(String str, ValueChanged<String> onChanged) async {
         headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     },
-    body: jsonEncode(str)
+    body: str
   );
 
   print(response1.statusCode);
@@ -221,7 +221,7 @@ void geminiAPIcall2(String str, ValueChanged<String> onChanged) async {
         headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     },
-    body: jsonEncode(str)
+    body: str
   );
 
   print(response2.statusCode);
@@ -230,16 +230,39 @@ void geminiAPIcall2(String str, ValueChanged<String> onChanged) async {
     print(response2.body);
   } else {return;}
 
-  geminiAPIcall3(<String,String> {'recipeList': response1.body, 'ingred': response2.body}, onChanged);
+  /* EDAMAM */
+  final responseEdamam = await http.get(
+    Uri.parse('https://api.edamam.com/api/nutrition-data?app_id=4ea69389&app_key=78913110f28e2be9d381583730960701%20%09&nutrition-type=logging&ingr=' + Uri.encodeFull(response2.body)),
+            headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+    /*
+    body: jsonEncode(<String, String>{
+      'app_id': '4ea69389',
+      'app_key': '78913110f28e2be9d381583730960701',
+      'nutrition-type': 'logging',
+      'ingr': response2.body
+    })*/
+  );
+
+  print(responseEdamam.statusCode);
+
+  if (responseEdamam.statusCode < 300) {
+    print(responseEdamam.body);
+    onChanged(responseEdamam.body);
+  } else {return;}
+
+  /* Final step */
+  geminiAPIcall3(str, onChanged);
 }
 
-void geminiAPIcall3(Map<String, String> jsonstr, ValueChanged<String> onChanged) async {
+void geminiAPIcall3(String raw, ValueChanged<String> onChanged) async {
   final response = await http.post(
     Uri.parse('http://localhost:8080/sustainability'),
         headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     },
-    body: jsonEncode(jsonstr)
+    body: raw
   );
 
   print(response.statusCode);
