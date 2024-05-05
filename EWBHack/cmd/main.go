@@ -27,6 +27,11 @@ type Person struct {
 	Carbohydrates string `json:"carbs"`
 	Protein       string `json:"protein"`
 	Fat           string `json:"fat"`
+	Gender        string `json:"gender"`
+	BMI           string `json:"BMI"`
+	ETotal        string `json:"Etotal"`
+	Age           string `json:"age"`
+	Allergy       string `json:"allergy"`
 }
 
 // example request
@@ -58,7 +63,7 @@ func handleIngredientRequest(w http.ResponseWriter, r *http.Request) {
 
 	// For text-only input, use the gemini-pro model
 	model := client.GenerativeModel("gemini-pro")
-	resp, err := model.GenerateContent(ctx, genai.Text("You are an agent adept at giving nutritional information. I want to eat "+p.Calories+" calories a day, I am a "+p.Diet+", I want "+p.Carbohydrates+" percent of my diet to be carbs "+p.Protein+" percent to be protein and "+p.Fat+" percent to be fat. I eat 3 meals a day and my metabolic rate is 7100 KJ/day. Suggest groceries I should buy as a shopping list for one day and exact amount for each ingredient in grams. Make the Breakfast the lightest meal by the amount of calories. Give only ingredients and not recipes."))
+	resp, err := model.GenerateContent(ctx, genai.Text("You are an agent that is adept at giving nutritional information and recipe names, with ingredients and their amounts but not the recipe cooking instructions. I am a"+p.Gender+" and my age is "+p.Age+". I am allergic to "+p.Allergy+" so please do not suggest any recipes or ingredients that contain this food. My BMI is "+p.BMI+". I want to eat "+p.Calories+" calories a day, I exert "+p.ETotal+" calories a day. I am a "+p.Diet+", I want "+p.Carbohydrates+" percent of my diet to be carbs "+p.Protein+" percent to be protein and "+p.Fat+" percent to be fat. I eat 3 meals a day and my metabolic rate is 7100 KJ/day. Suggest groceries I should buy as a shopping list for one day and exact amount for each ingredient in grams. Make the Breakfast the lightest meal by the amount of calories. Give recipe names and ingredients only, do not provide cooking instructions for the recipes. Make sure the output always contains ingredients separated by food groups and then those ingredients for each recipe. List ingredients under recipes and food groups as bullet points."))
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
@@ -81,6 +86,6 @@ func handleIngredientRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/ingredients", handleIngredientRequest)
+	http.HandleFunc("/ingredientsRecipes", handleIngredientRequest)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
