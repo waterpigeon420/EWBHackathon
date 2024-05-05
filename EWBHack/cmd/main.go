@@ -206,8 +206,9 @@ func parseRecipes(data string) (Recipes, error) {
 }
 
 func main() {
+	log.Println("Running Golang server")
 	http.HandleFunc("/geminiResp", handleIngredientRequest)
 	http.HandleFunc("/ingredients", parseHandler)
 	http.HandleFunc("/recipes", recipesHandler)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Println(http.ListenAndServe(":8080", nil))
 }

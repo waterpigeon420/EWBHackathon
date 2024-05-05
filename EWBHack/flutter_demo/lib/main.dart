@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
@@ -59,7 +61,7 @@ class MyHomePage extends StatefulWidget {
 
 void demo_apicall() async {
   final response = await http.post(
-    Uri.parse('http://localhost:8080'),
+    Uri.parse('http://localhost:8080/geminiResp'),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     },
@@ -76,10 +78,7 @@ void demo_apicall() async {
 
   if (response.statusCode < 300) {
     print(response.body);
-  }
-  else {
-    print("Up yours!");
-  }
+  } else {}
 }
 
 class _MyHomePageState extends State<MyHomePage> {
@@ -135,21 +134,22 @@ class _MyHomePageState extends State<MyHomePage> {
           children: <Widget>[
             /* Starter code */
             const Text(
-              'You have cocked the button this many times:',
+              'You have clicked the demo button this many times:',
             ),
             Text(
               '$_counter',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
+            /* Form field */
+            const FormExample(),
             /* Buttons */
             const Text('What is your level of exercise?'),
             ElevatedButton(
-              onPressed:() {
-                demo_apicall();
-                print("Button pressed!");
-              },
-              child: const Text('Not very vigourous…')
-            ),
+                onPressed: () {
+                  demo_apicall();
+                  print("Button pressed!");
+                },
+                child: const Text('Submit…')),
           ],
         ),
       ),
@@ -158,6 +158,306 @@ class _MyHomePageState extends State<MyHomePage> {
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+}
+
+/* Form auxiliries */
+enum ColorLabel {
+  blue('Male', Colors.blue),
+  pink('Female', Colors.pink),
+  green('Non-binary', Colors.green);
+
+  const ColorLabel(this.label, this.color);
+  final String label;
+  final Color color;
+}
+
+void gemini_apicall(Map<String,String> jsonstr) async {
+  final response = await http.post(
+    Uri.parse('http://localhost:8080/geminiResp'),
+    headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+    body: jsonEncode(jsonstr),
+  );
+
+  print(response.statusCode);
+
+  if (response.statusCode < 300) {
+    print(response.body);
+  } else {}
+}
+
+/* Form */
+class FormExample extends StatefulWidget {
+  const FormExample({super.key});
+
+  @override
+  State<FormExample> createState() => _FormExampleState();
+}
+
+class _FormExampleState extends State<FormExample> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _genderController = TextEditingController();
+  final TextEditingController _ageController = TextEditingController();
+  final _calorieController = <TextEditingController>[TextEditingController(),TextEditingController()];
+  final _percentController = <TextEditingController>[TextEditingController(),TextEditingController(),TextEditingController()];
+  final TextEditingController _dietaryController = TextEditingController();
+  final TextEditingController _allergyController = TextEditingController();
+  ColorLabel? selectedColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          /* Row 1 */
+          Row(
+            children: [
+              SizedBox(width: 8),
+              /* Gender */
+              Expanded(
+                  flex: 3,
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        DropdownMenu<ColorLabel>(
+                          initialSelection: ColorLabel.green,
+                          controller: _genderController,
+                          requestFocusOnTap: true,
+                          label: const Text('Color'),
+                          onSelected: (ColorLabel? color) {
+                            setState(() {
+                              selectedColor = color;
+                            });
+                          },
+                          dropdownMenuEntries: ColorLabel.values
+                              .map<DropdownMenuEntry<ColorLabel>>(
+                                  (ColorLabel color) {
+                            return DropdownMenuEntry<ColorLabel>(
+                              value: color,
+                              label: color.label,
+                              enabled: color.label != 'Grey',
+                              style: MenuItemButton.styleFrom(
+                                foregroundColor: color.color,
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ])),
+              SizedBox(width: 8),
+              /* Age */
+              Expanded(
+                flex: 3,
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextFormField(
+                        controller: _ageController,
+                        decoration: const InputDecoration(
+                          hintText: 'Age',
+                        ),
+                        validator: (String? value) {
+                          if (value == null ||
+                              value.isEmpty ||
+                              (num.tryParse(value) == null
+                                      ? -1
+                                      : num.parse(value)) <
+                                  0) {
+                            return 'Enter a nonnegative number';
+                          }
+                          return null;
+                        },
+                      ),
+                    ]),
+              ),
+              SizedBox(width: 8),
+            ],
+          ),
+
+          /* Row 2: Calories */
+          Row(
+            children: [
+              SizedBox(width: 8),
+              Expanded(
+                  flex: 3,
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        /* Caloric intake */
+                        TextFormField(
+                          controller: _calorieController[0],
+                          decoration: const InputDecoration(
+                            hintText: 'Total calories',
+                          ),
+                          validator: (String? value) {
+                            if (value == null ||
+                                value.isEmpty ||
+                                (num.tryParse(value) == null
+                                        ? -1
+                                        : num.parse(value)) <=
+                                    0) {
+                              return 'Enter a positive number';
+                            }
+                            return null;
+                          },
+                        ),
+                      ])),
+              SizedBox(width: 8),
+              Expanded(
+                flex: 3,
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      /* Dietary restrictions */
+                      TextFormField(
+                        controller: _calorieController[1],
+                        decoration: const InputDecoration(
+                          hintText: 'Daily caloric consumption',
+                        ),
+                        validator: (String? value) {
+                          if (value == null ||
+                              value.isEmpty ||
+                              (num.tryParse(value) == null
+                                      ? -1
+                                      : num.parse(value)) <=
+                                  0) {
+                            return 'Enter a positive number';
+                          }
+                          return null;
+                        },
+                      ),
+                    ]),
+              ),
+              SizedBox(width: 8),
+            ],
+          ),
+
+          /* Row 3: Caloric percentage */
+          Row(
+            children: [
+              SizedBox(width: 8),
+              Expanded(
+                  flex: 3,
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextFormField(
+                          controller: _percentController[0],
+                          decoration: const InputDecoration(
+                            hintText: 'Percentage carbs',
+                          ),
+                          validator: (String? value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Carb + Protein + Fat == 100';
+                            }
+                            return null;
+                          },
+                        ),
+                      ])),
+              SizedBox(width: 8),
+              Expanded(
+                flex: 3,
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextFormField(
+                        controller: _percentController[1],
+                        decoration: const InputDecoration(
+                          hintText: 'Percentage fat',
+                        ),
+                        validator: (String? value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Carb + Protein + Fat == 100';
+                          }
+                          return null;
+                        },
+                      ),
+                    ]),
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                flex: 3,
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextFormField(
+                        controller: _percentController[2],
+                        decoration: const InputDecoration(
+                          hintText: 'Percentage protein',
+                        ),
+                        validator: (String? value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Carb + Protein + Fat == 100';
+                          }
+                          return null;
+                        },
+                      ),
+                    ]),
+              ),
+              SizedBox(width: 8),
+            ],
+          ),
+
+          /* Lower rows: Dietary restrictions */
+          TextFormField(
+            controller: _dietaryController,
+            decoration: const InputDecoration(
+              hintText: 'Enter your dietary restriction',
+            ),
+            validator: (String? value) {
+              if (value == null || value.isEmpty) {
+                return 'lacto-ovo, vegetarian, diabetic, halal, …';
+              }
+              return null;
+            },
+          ),
+          TextFormField(
+            controller: _allergyController,
+            decoration: const InputDecoration(
+              hintText: 'Enter your allergies',
+            ),
+            validator: (String? value) {
+              if (value == null || value.isEmpty) {
+                return 'peanuts, gluten, …';
+              }
+              return null;
+            },
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: ElevatedButton(
+              onPressed: () {
+                // Validate will return true if the form is valid, or false if
+                // the form is invalid.
+                if (_formKey.currentState!.validate()) {
+                  // Process data.
+                  print(_genderController.value);
+                  print(_ageController.value);
+                  // Perform API call
+                  final body = <String,String> {
+                    'gender': _genderController.value.toString(),
+                    'age': _ageController.value.toString(),
+                    'bmi': "20",
+                    'calories': _calorieController[0].value.toString(),
+                    'ETotal': _calorieController[1].value.toString(),
+                    'carbs': _percentController[0].value.toString(),
+                    'fat': _percentController[1].value.toString(),
+                    'protein': _percentController[2].value.toString(),
+                    'diet': _dietaryController.value.toString(),
+                    'allergy': _allergyController.value.toString()
+                  };
+                  gemini_apicall(body);
+                }
+              },
+              child: const Text('Submit'),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
